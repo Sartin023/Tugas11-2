@@ -48,15 +48,18 @@ def detail(keyword):
 
     if not definitions:
         return redirect(url_for(
-            'main',
-            msg=f'Could not find the word, "{keyword}"'
+            'eror',
+            # msg=f'Could not find the word, "{keyword}"'
+            word=keyword
          ))
         
     if type (definitions[0]) is str:
-        suggestions_ex = ','.join(definitions)
+        suggestions = ','.join(definitions)
         return redirect(url_for(
-            'main',
-            msg=f'Could not find the word, "{keyword}", did you mean one of these word : {suggestions_ex}'
+            'eror',
+            word=keyword,
+            suggestions = ','.join(definitions)
+            # msg=f'Could not find the word, "{keyword}", did you mean one of these word : {suggestions_ex}'
          ))
         
     
@@ -67,25 +70,18 @@ def detail(keyword):
         definitions=definitions,
         status=status,
     )
-
-    
-    
     
 @app.route('/api/save_word', methods=['POST'])
 def save_word():
     json_data = request.get_json()
     word = json_data.get('word_give')
     definitions = json_data.get('definitions_give')
-    
-
     doc = {
         'word' : word,
         'definitions': definitions,
         'date': datetime.now().strftime('%Y %m %d'),
     }
-    
     db.words.insert_one(doc)
-
     return jsonify({
         'result': 'success',
         'msg': f'Saved {word} Complete!!!'
@@ -101,17 +97,17 @@ def delete_word():
         'msg': f'Delete {word} Complete!!!'
     })
 
-# @app.route('/api/error', methods=['POST'])
-# def eror():
-#     try:
-#         # Ambil kata dari request POST
-#         word = request.form['word']
-        
-#         # Proses cari kata di dictionary API
-#         raise ValueError("Kata tidak ditemukan")
-#     except ValueError as e:
-#         # Tampilkan pesan error dan kata yang serupa
-#         return render_template('error.html', error_message=str(e))
+@app.route('/error', methods=['POST'])
+def eror():
+    word = request.args.get('word')
+    suggestions = request.args.get('suggestions')
+    if suggestions :
+        suggestions = suggestions.split(',')
+    return render_template(
+        'error.html',
+        word=word,
+        suggestions=suggestions
+          )
 
 @app.route('/api/get_exs', methods=['GET'])
 def get_exs():
@@ -131,7 +127,7 @@ def get_exs():
 @app.route('/api/save_ex', methods=['POST'])
 def save_ex():
     word = request.form.get('word')
-    example = request. form.get('example')
+    example = request.form.get('example')
     doc = {
         'word': word,
         'example': example,

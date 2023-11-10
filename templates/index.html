@@ -33,6 +33,7 @@
                 alert('Please enter a word to search');
                 return;
             }
+
             if (word_list.includes(word)) {
                 let row = $(`#word-${word}`);
                 row.addClass('highlight');
@@ -41,7 +42,15 @@
             } else {
                 window.location.href = `/detail/${word}?status_give=new`;
             }
-           
+
+            if (!word_list.includes(word)) {
+                // Menampilkan halaman eror ketika kata yang dimasukkan tidak ada dalam server
+                window.location.href = `/detail/${word}`;
+            } else {
+                // Menampilkan halaman eror dengan suggestion
+                let suggestions = request.args.get('suggestions')
+                window.location.href = `/detail/${word}?${suggestions}`;
+            }
         }
 
 
@@ -55,11 +64,12 @@
 
         <div class="search-box d-flex justify-content-center">
             <input id="input-word" class="from-control" style="margin-right: 0.5rem;" />
-
-            <button class="btn btn-light" onclick="find_word()">Cari</button>
+            <button class="btn btn-light" onclick="find_word()">
+                Cari
+            </button>
         </div>
 
-        
+
 
         <table class="table">
             <thead class="thead-light">
